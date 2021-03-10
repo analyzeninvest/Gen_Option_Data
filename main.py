@@ -3,7 +3,17 @@
 def main():
     ticker = "ITC"
     xl = make_latest_option_xls_by_tiker(ticker)
-    read_option_xls_make_dataframes(xl)
+    (df_CE, df_PE) = read_option_xls_make_dataframes(xl)
+    #print(df_CE)
+    #print(df_PE)
+
+
+def filter_large_open_interest(df):
+    """
+    This will filter large open interest by provided dataframe DF.
+    Generally will filter values larger than 1000.
+    """
+    pass
     
 
 def read_option_xls_make_dataframes(xls_path):
@@ -11,12 +21,13 @@ def read_option_xls_make_dataframes(xls_path):
     This will make the dataframe from the XLS_PATH provided.
     """
     import pandas as pd
-    df_CE = pd.read_excel(xls_path, skip_rows = 20, nrows = 20)
-    df_PE = pd.read_excel(xls_path, nrows = 20)
-    print(df_CE)
-    print(df_PE)
+    df_CE = pd.read_excel(xls_path, skiprows = 20, nrows = 19)
+    df_PE = pd.read_excel(xls_path, nrows = 19)
+    #print(df_CE)
+    #print(df_PE)
     df_CE.to_csv("CE.csv")
     df_PE.to_csv("PE.csv")
+    return(df_CE, df_PE)
     
     
 def make_latest_option_xls_by_tiker(ticker):
