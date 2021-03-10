@@ -6,23 +6,43 @@ def main():
     (df_CE, df_PE) = read_option_xls_make_dataframes(xl)
     #print(df_CE)
     #print(df_PE)
+    df_CE = df_CE
+    df_PE = df_PE
+    df_CE_OI = get_large_open_interest(df_CE)
+    df_PE_OI = get_large_open_interest(df_PE)
+    df_OI = df_PE_OI.append(df_CE_OI)
+    df_OI.to_csv("OI.csv")
 
 
-def filter_large_open_interest(df):
+def get_large_open_interest(df):
     """
     This will filter large open interest by provided dataframe DF.
     Generally will filter values larger than 1000.
-    """
-    pass
     
+    """
+    
+    df_OI = filter_item_by_value(df, 'openInterest', 1000, True)
+    return(df_OI)
+
+def filter_item_by_value(df, item, value, is_greater): 
+    """
+    This will filter the DF by ITEM if VALUE is > or < based on IS_GREATER.
+    """
+    if(is_greater):
+        df_filtered = df[df[item] > value]
+    else:
+        df_filtered = df[df[item] < value]
+    return(df_filtered)
 
 def read_option_xls_make_dataframes(xls_path):
     """
     This will make the dataframe from the XLS_PATH provided.
     """
     import pandas as pd
-    df_CE = pd.read_excel(xls_path, skiprows = 20, nrows = 19)
-    df_PE = pd.read_excel(xls_path, nrows = 19)
+    df_CE = pd.read_excel(xls_path, skiprows = 20, nrows = 19, index_col = None)
+    df_PE = pd.read_excel(xls_path, nrows = 19, index_col = None)
+    df_CE = df_CE.set_index("Unnamed: 0").T
+    df_PE = df_PE.set_index("Unnamed: 0").T
     #print(df_CE)
     #print(df_PE)
     df_CE.to_csv("CE.csv")
