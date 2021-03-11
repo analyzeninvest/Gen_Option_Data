@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+TICKER = "TATAMOTORS"
+XLS_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/Option_Data/"
+LARGE_OI = 1000
+
 def main():
-    ticker = "ITC"
-    xl = make_latest_option_xls_by_tiker(ticker)
+    xl = make_latest_option_xls_by_tiker(TICKER)
     (df_CE, df_PE) = read_option_xls_make_dataframes(xl)
     #print(df_CE)
     #print(df_PE)
@@ -12,16 +15,17 @@ def main():
     df_PE_OI = get_large_open_interest(df_PE)
     df_OI = df_PE_OI.append(df_CE_OI)
     df_OI.to_csv("OI.csv")
+    print(df_OI)
 
 
 def get_large_open_interest(df):
     """
     This will filter large open interest by provided dataframe DF.
-    Generally will filter values larger than 1000.
+    Generally will filter values larger than LARGE_OI.
     
     """
     
-    df_OI = filter_item_by_value(df, 'openInterest', 1000, True)
+    df_OI = filter_item_by_value(df, 'openInterest', LARGE_OI, True)
     return(df_OI)
 
 def filter_item_by_value(df, item, value, is_greater): 
@@ -45,12 +49,12 @@ def read_option_xls_make_dataframes(xls_path):
     df_PE = df_PE.set_index("Unnamed: 0").T
     #print(df_CE)
     #print(df_PE)
-    df_CE.to_csv("CE.csv")
-    df_PE.to_csv("PE.csv")
+    df_CE.to_csv(XLS_PATH + "CE.csv")
+    df_PE.to_csv(XLS_PATH + "PE.csv")
     return(df_CE, df_PE)
     
     
-def make_latest_option_xls_by_tiker(ticker):
+def make_latest_option_xls_by_tiker(TICKER):
     """
     make the option xls by the TICKER.
     """
@@ -64,7 +68,7 @@ def make_latest_option_xls_by_tiker(ticker):
     #all_stock_codes = nse.get_stock_codes()
     #pprint(all_stock_codes)
     #pprint(nse.get_quote('infy'))
-    raw_options_data = nse_optionchain_scrapper(ticker)
+    raw_options_data = nse_optionchain_scrapper(TICKER)
     #print(type(raw_options_data))
     df_raw_option_data = pd.DataFrame.from_dict(raw_options_data)
     #print(df_option_table_by_strike)
@@ -75,7 +79,7 @@ def make_latest_option_xls_by_tiker(ticker):
         df_filter_useful_data = df_raw_option_data.loc[['data']]
         df_latest_useful_data = df_filter_useful_data['filtered'][0]
         sheet_name = 0
-        xls_path = ticker + "_Option_Data" + ".xls"
+        xls_path = XLS_PATH + TICKER + "_Option_Data" + ".xls"
         writer = pd.ExcelWriter(xls_path, engine='openpyxl')
         #first = True
         counter = 0
