@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-TICKER = "TATAMOTORS"
-XLS_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/Option_Data/"
+TICKER = "ITC"
+PROJECT_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/"
+XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
 
 def main():
@@ -14,17 +15,27 @@ def main():
     df_CE_OI = get_large_open_interest(df_CE)
     df_PE_OI = get_large_open_interest(df_PE)
     df_OI = df_PE_OI.append(df_CE_OI)
-    df_OI.to_csv("OI.csv")
-    print(df_OI)
+    df_OI.index.name = "PutCall"
+    append_to_OI_csv(df_OI)
+    #df_OI.to_csv("OI.csv")
+    #print(df_OI)
 
+
+def append_to_OI_csv(df_oi):
+    """
+    This will append to the existing csv for OI data.
+    """
+    import pandas as pd
+    df_existing = pd.read_csv(PROJECT_PATH + "OI.csv", index_col = None)
+    df_all = df_existing.append(df_oi)
+    #df_all = df_all.set_index("PutCall")
+    df_all.to_csv(PROJECT_PATH + "OI.csv")
 
 def get_large_open_interest(df):
     """
     This will filter large open interest by provided dataframe DF.
     Generally will filter values larger than LARGE_OI.
-    
     """
-    
     df_OI = filter_item_by_value(df, 'openInterest', LARGE_OI, True)
     return(df_OI)
 
