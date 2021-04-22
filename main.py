@@ -5,20 +5,20 @@ PROJECT_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/"
 XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
 
-ONE_STOCK = True
+ONE_STOCK = False
 
 LIST_OF_TICKERS = [
-    #"NTPC",
+    "NTPC",
     #"ICICIBANK",
-    #"HDFCBANK",
-    #"AXISBANK",
-    #"GAIL",
+    "HDFCBANK",
+    "AXISBANK",
+    "GAIL",
     #"UPL",
     #"TATAMOTORS",
     #"INDUSINDBK",
     #"BPCL"
     #"TATAMOTORS",
-    #"TCS",
+    "TCS",
     #"IOC",
     "ONGC",
     #"SUNPHARMA",
@@ -29,7 +29,7 @@ LIST_OF_TICKERS = [
     #"LICHSGFIN",
     "TATASTEEL",
     #"YESBANK", #
-    #"COALINDIA",
+    "COALINDIA",
     #"HDFCBANK",
     #"BHEL",
     #"ABB" #
@@ -43,7 +43,61 @@ def main():
         for tickers in LIST_OF_TICKERS:
             print("\nRunning for :" + tickers)
             run_by_ticker(tickers)
+    construct_df_from_latest_OI(PROJECT_PATH + "OI.csv")
 
+    
+def construct_df_from_latest_OI(oi_csv):
+    import pandas as pd
+    import re
+    df_oi = pd.read_csv(oi_csv)
+    print(df_oi)
+    df_oi_chopped = df_oi.drop([
+        "strikePrice",
+        "expiryDate",
+        "underlying",
+        "identifier",
+        "openInterest",
+        "changeinOpenInterest",
+        "pchangeinOpenInterest",
+        "totalTradedVolume",
+        "impliedVolatility",
+        "lastPrice",
+        "change",
+        "pChange",
+        "totalBuyQuantity",
+        "totalSellQuantity",
+        "bidQty",
+        "bidprice",
+        "askQty",
+        "askPrice",
+        "underlyingValue"], axis=1)
+    print(df_oi_chopped)
+    PE_CE_array = []
+    PE_CE_array_filtered = []
+    for column in df_oi_chopped.columns:
+        PE_CE_array = df_oi_chopped[column]
+        PE_CE_array_temp = []
+        print(PE_CE_array)
+        for elem in PE_CE_array:
+            match = re.search("^[P|C]E", str(elem))
+            if match:
+                PE_CE_array_temp.append(elem)
+        PE_CE_array_filtered.extend(PE_CE_array_temp)
+    print(PE_CE_array_filtered)
+    PE_CE_dict = {"PutCall" : PE_CE_array_filtered}
+    df_oi_required = pd.DataFrame(data=PE_CE_dict)
+    df_oi_required = pd.concat([
+        df_oi_required,
+        df_oi["underlying"].reindex(df_oi_required.index),
+        df_oi["expiryDate"].reindex(df_oi_required.index),
+        df_oi["totalTradedVolume"].reindex(df_oi_required.index),
+        df_oi["openInterest"].reindex(df_oi_required.index),
+        df_oi["changeinOpenInterest"].reindex(df_oi_required.index),
+        df_oi["underlyingValue"].reindex(df_oi_required.index),
+        df_oi["strikePrice"].reindex(df_oi_required.index)], axis=1)
+    print(df_oi_required)
+    df_oi_required.to_csv(PROJECT_PATH + "OI_filtered.csv", index=False)
+        
 
 def run_by_ticker(ticker):
     """
