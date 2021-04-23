@@ -1,41 +1,48 @@
 #!/usr/bin/env python
 
-TICKER = "ICICIBANK"
+TICKER = "SBIN"
 PROJECT_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/"
 XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
 
-ONE_STOCK = False
+ONE_STOCK = True
 
 LIST_OF_TICKERS = [
-    "NTPC",
+    #"NTPC",
     #"ICICIBANK",
-    "HDFCBANK",
+    #"HDFCBANK",
     "AXISBANK",
-    "GAIL",
+    #"GAIL",
     #"UPL",
     #"TATAMOTORS",
     #"INDUSINDBK",
     #"BPCL"
     #"TATAMOTORS",
-    "TCS",
+    #"TCS",
     #"IOC",
-    "ONGC",
+    #"ONGC",
     #"SUNPHARMA",
-    "INFY",
+    #"INFY",
     #"SBIN",
     #"PNB", #
     #"IBULHSGFIN",
     #"LICHSGFIN",
     "TATASTEEL",
     #"YESBANK", #
-    "COALINDIA",
+    #"COALINDIA",
     #"HDFCBANK",
     #"BHEL",
     #"ABB" #
+    "POWERGRID",
+    "INDUSINDBK",
+    "BAJAJFINSV",
+    "SBILIFE",
+    "HDFCLIFE"
 ]
 
 def main():
+    
+    init_template()
     if ONE_STOCK == True:
         print("\nRunning for :" + TICKER)
         run_by_ticker(TICKER)
@@ -45,12 +52,49 @@ def main():
             run_by_ticker(tickers)
     construct_df_from_latest_OI(PROJECT_PATH + "OI.csv")
 
+def init_template():
+    """
+    Make the init templates
+    """
+    import os
+    import pandas as pd
+    oi_path = PROJECT_PATH + "OI.csv"
+    if os.path.exists(oi_path):
+        os.remove(oi_path)
+    template = {
+	"PutCall":[],
+	"strikePrice":[],
+	"expiryDate":[],
+	"underlying":[],
+	"identifier":[],
+	"openInterest":[],
+	"changeinOpenInterest":[],
+	"pchangeinOpenInterest":[],
+	"totalTradedVolume":[],
+	"impliedVolatility":[],
+	"lastPrice":[],
+	"change":[],
+	"pChange":[],
+	"totalBuyQuantity":[],
+	"totalSellQuantity":[],
+	"bidQty":[],
+	"bidprice":[],
+	"askQty":[],
+	"askPrice":[],
+	"underlyingValue":[]
+    }
+    df_template = pd.DataFrame(data=template)
+    df_template.to_csv(oi_path, index=False)
+
     
 def construct_df_from_latest_OI(oi_csv):
+    """
+    Filter the OI.csv file
+    """
     import pandas as pd
     import re
     df_oi = pd.read_csv(oi_csv)
-    print(df_oi)
+    #print(df_oi)
     df_oi_chopped = df_oi.drop([
         "strikePrice",
         "expiryDate",
@@ -71,7 +115,7 @@ def construct_df_from_latest_OI(oi_csv):
         "askQty",
         "askPrice",
         "underlyingValue"], axis=1)
-    print(df_oi_chopped)
+    #print(df_oi_chopped)
     PE_CE_array = []
     PE_CE_array_filtered = []
     for column in df_oi_chopped.columns:
@@ -79,11 +123,11 @@ def construct_df_from_latest_OI(oi_csv):
         PE_CE_array_temp = []
         print(PE_CE_array)
         for elem in PE_CE_array:
-            match = re.search("^[P|C]E", str(elem))
+            match = re.search("^([P|C]E)", str(elem))
             if match:
-                PE_CE_array_temp.append(elem)
+                PE_CE_array_temp.append(match.group(1))
         PE_CE_array_filtered.extend(PE_CE_array_temp)
-    print(PE_CE_array_filtered)
+    #print(PE_CE_array_filtered)
     PE_CE_dict = {"PutCall" : PE_CE_array_filtered}
     df_oi_required = pd.DataFrame(data=PE_CE_dict)
     df_oi_required = pd.concat([
