@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-TICKER = "SBIN"
+TICKER = "TATASTEEL"
 PROJECT_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/"
 XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
+SPREAD = .10
 
 ONE_STOCK = True
 
@@ -12,7 +13,7 @@ LIST_OF_TICKERS = [
     #"ICICIBANK",
     #"HDFCBANK",
     "AXISBANK",
-    #"GAIL",
+    "GAIL",
     #"UPL",
     #"TATAMOTORS",
     #"INDUSINDBK",
@@ -20,7 +21,7 @@ LIST_OF_TICKERS = [
     #"TATAMOTORS",
     #"TCS",
     #"IOC",
-    #"ONGC",
+    "ONGC",
     #"SUNPHARMA",
     #"INFY",
     #"SBIN",
@@ -51,7 +52,21 @@ def main():
             print("\nRunning for :" + tickers)
             run_by_ticker(tickers)
     construct_df_from_latest_OI(PROJECT_PATH + "OI.csv")
+    construct_tradable_oi()
 
+def construct_tradable_oi():
+    """
+    Construct OI that is tradable.
+    """
+    import pandas as pd
+    df_filtered_oi = pd.read_csv(PROJECT_PATH + "OI_filtered.csv")
+    df_tradable_more = df_filtered_oi[df_filtered_oi["strikePrice"] > df_filtered_oi["underlyingValue"]*SPREAD]
+    df_tradable_less = df_filtered_oi[df_filtered_oi["strikePrice"] < df_filtered_oi["underlyingValue"]*SPREAD]
+    df_tradable = pd.concat([df_tradable_less, df_tradable_more])
+    print(df_tradable)
+
+    
+    
 def init_template():
     """
     Make the init templates
