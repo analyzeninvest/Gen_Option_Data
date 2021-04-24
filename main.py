@@ -6,7 +6,7 @@ XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
 SPREAD = .10
 
-ONE_STOCK = True
+ONE_STOCK = False
 
 LIST_OF_TICKERS = [
     #"NTPC",
@@ -54,16 +54,48 @@ def main():
     construct_df_from_latest_OI(PROJECT_PATH + "OI.csv")
     construct_tradable_oi()
 
+
+    
 def construct_tradable_oi():
     """
     Construct OI that is tradable.
     """
     import pandas as pd
+    import numpy as np
+    import os
     df_filtered_oi = pd.read_csv(PROJECT_PATH + "OI_filtered.csv")
-    df_tradable_more = df_filtered_oi[df_filtered_oi["strikePrice"] > df_filtered_oi["underlyingValue"]*SPREAD]
-    df_tradable_less = df_filtered_oi[df_filtered_oi["strikePrice"] < df_filtered_oi["underlyingValue"]*SPREAD]
-    df_tradable = pd.concat([df_tradable_less, df_tradable_more])
-    print(df_tradable)
+    stocks = df_filtered_oi["underlying"]
+    np_stocks = np.array(stocks)
+    stocks = np.unique(np_stocks)
+    df_filter_stock = pd.DataFrame()
+    for stock in stocks:
+        filter_stock_name = df_filtered_oi["underlying"].isin([stock])
+        df_filtered_stock = df_filtered_oi[filter_stock_name]
+        filter_stock_pe = df_filtered_stock["PutCall"].isin(["PE"])
+        filter_stock_ce = df_filtered_stock["PutCall"].isin(["CE"])
+        df_filter_stock_pe = df_filtered_stock[filter_stock_pe]
+        df_filter_stock_ce = df_filtered_stock[filter_stock_ce]
+        if not df_filter_stock_ce.empty:
+            current_price = df_filter_stock_ce["underlyingValue"].iloc[0]
+            ce_filter_value = current_price*(1+SPREAD)
+            df_filter_stock_ce = df_filter_stock_ce[df_filter_stock_ce["strikePrice"] < ce_filter_value]
+            df_filter_stock = pd.concat([df_filter_stock,df_filter_stock_ce])
+        if not df_filter_stock_pe.empty:
+            current_price = df_filter_stock_pe["underlyingValue"].iloc[0]
+            pe_filter_value = current_price*(1-SPREAD)
+            df_filter_stock_pe = df_filter_stock_pe[df_filter_stock_pe["strikePrice"] > pe_filter_value]
+            df_filter_stock = pd.concat([df_filter_stock,df_filter_stock_pe])
+        #print("stock --->")
+        #print(df_filter_stock_pe)
+        #print(df_filter_stock_ce)
+    if not df_filter_stock.empty:
+        oi_tradable_path = PROJECT_PATH + "OI_tradable.csv"
+        if os.path.exists(oi_tradable_path):
+            os.remove(oi_tradable_path)
+        df_filter_stock.to_csv(oi_tradable_path, index = False)
+    else:
+        print("No Tradble Open Interest found for the Given Stocks!!!")
+
 
     
     
