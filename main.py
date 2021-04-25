@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-TICKER = "TATASTEEL"
+TICKER = "SBIN"
 PROJECT_PATH = "/home/arnashree/analyzeninvest-projects/Gen_Option_Data/"
 XLS_PATH = PROJECT_PATH + "Option_Data/"
 LARGE_OI = 1000
@@ -195,21 +195,22 @@ def run_by_ticker(ticker):
     Make the OI.csv by TICKER.
     """
     xl = make_latest_option_xls_by_tiker(ticker)
-    (df_CE, df_PE) = read_option_xls_make_dataframes(xl)
-    #print(df_CE)
-    #print(df_PE)
-    df_CE = df_CE
-    df_PE = df_PE
-    df_CE_OI = get_large_open_interest(df_CE)
-    df_PE_OI = get_large_open_interest(df_PE)
-    #print(df_CE_OI)
-    #print(df_PE_OI)
-    df_OI = df_PE_OI.append(df_CE_OI)
-    df_OI.index.name = "PutCall"
-    append_to_OI_csv(df_OI)
-    #print(df_OI)
-    #df_OI.to_csv("OI.csv")
-    #print(df_OI)
+    if xl != -1:
+        (df_CE, df_PE) = read_option_xls_make_dataframes(xl)
+        #print(df_CE)
+        #print(df_PE)
+        df_CE = df_CE
+        df_PE = df_PE
+        df_CE_OI = get_large_open_interest(df_CE)
+        df_PE_OI = get_large_open_interest(df_PE)
+        #print(df_CE_OI)
+        #print(df_PE_OI)
+        df_OI = df_PE_OI.append(df_CE_OI)
+        df_OI.index.name = "PutCall"
+        append_to_OI_csv(df_OI)
+        #print(df_OI)
+        #df_OI.to_csv("OI.csv")
+        #print(df_OI)
     
     
 
@@ -223,6 +224,7 @@ def append_to_OI_csv(df_oi):
     #df_all = df_all.set_index("PutCall")
     df_all.to_csv(PROJECT_PATH + "OI.csv")
 
+    
 def get_large_open_interest(df):
     """
     This will filter large open interest by provided dataframe DF.
@@ -230,6 +232,7 @@ def get_large_open_interest(df):
     """
     df_OI = filter_item_by_value(df, 'openInterest', LARGE_OI, True)
     return(df_OI)
+
 
 def filter_item_by_value(df, item, value, is_greater): 
     """
@@ -240,6 +243,7 @@ def filter_item_by_value(df, item, value, is_greater):
     else:
         df_filtered = df[df[item] < value]
     return(df_filtered)
+
 
 def read_option_xls_make_dataframes(xls_path):
     """
@@ -342,8 +346,12 @@ def make_latest_option_xls_by_tiker(TICKER):
             #writer.save()
         #print(df_option_chain)
         #df_option_chain.to_excel(writer)
-    writer.close()
-    return(xls_path)
+    try:
+        writer.close()
+        return(xls_path)
+    except UnboundLocalError:
+        print("No Option Data Found!!")
+        return -1
 
 
 
