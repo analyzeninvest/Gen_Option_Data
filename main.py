@@ -7,6 +7,7 @@ def main():
     from make_OI_data_as_needed import make_OI_data_for_top_gainers
     from make_OI_data_as_needed import make_OI_data_for_top_loser
     from make_OI_data_as_needed import make_OI_data_for_premarket
+    from make_OI_data_as_needed import make_OI_full
     t0 = time.time()
     if(len(sys.argv))==1:
         make_OI_data_for_premarket(MAX_TICKERS)
@@ -16,6 +17,8 @@ def main():
             make_OI_data_for_top_loser()
         elif argument == "-g":
             make_OI_data_for_top_gainers()
+        elif argument == "-f":
+            make_OI_full()
         else:
             make_OI_data_for_premarket(MAX_TICKERS)
     t1 = time.time()
