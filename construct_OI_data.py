@@ -14,7 +14,30 @@ def construct_OI_data_from_tickers(list_of_tickers):
         run_by_ticker(tickers)
     construct_df_from_latest_OI(PROJECT_PATH + "OI.csv")
     construct_tradable_oi()
+    construct_tradable_oi_with_type()
+    
 
+def construct_tradable_oi_with_type():
+    """
+    Create Tradable CSV from given OI data from CSV_PATH.
+    """
+    import pandas as pd
+    csv_path = PROJECT_PATH + "/OI_tradable.csv"
+    df_OI_data = pd.read_csv(csv_path)
+    type_of_Option = []
+    for index, row in df_OI_data.iterrows():
+        if row['PutCall'] == "PE" and row['underlyingValue'] >= row['strikePrice']:
+            type_of_Option.append("In-The-Money")
+        elif row['PutCall'] == "PE" and row['underlyingValue'] < row['strikePrice']:
+            type_of_Option.append("Out-of-The-Money")
+        elif row['PutCall'] == "CE" and row['underlyingValue'] <= row['strikePrice']:
+            type_of_Option.append("In-The-Money")
+        elif row['PutCall'] == "CE" and row['underlyingValue'] > row['strikePrice']:
+            type_of_Option.append("Out-of-The-Money")
+    df_OI_data["Type"]=type_of_Option
+    #df_OI_data = df_OI_data[df_OI_data[]]
+    df_OI_data.to_csv("OI_Trade_Setup.csv", index = False)
+    
     
 def construct_tradable_oi():
     """
